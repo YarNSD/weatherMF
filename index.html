@@ -117,6 +117,33 @@
       opacity: 0.1;
       filter: grayscale(1);
     }
+
+    /* Fullscreen Radar Modal Overlay */
+    .radar-fullscreen {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: none !important;
+      z-index: 9999 !important;
+      border-radius: 0 !important;
+      margin: 0 !important;
+      padding: 0.75rem 1rem !important;
+      display: flex !important;
+      flex-direction: column !important;
+      background-color: #101216 !important;
+    }
+    .radar-fullscreen #radarContainer {
+      flex: 1 1 auto !important;
+      height: calc(100vh - 150px) !important;
+      min-height: 400px !important;
+    }
+    html.light .radar-fullscreen {
+      background-color: #F3F4F8 !important;
+    }
   </style>
 </head>
 
@@ -270,7 +297,8 @@
       </div>
     </div>
 
-    <div class="ya-box rounded-3xl p-4 sm:p-5 space-y-3">
+    <!-- Weather Map Block with Responsive Dimensions & Fullscreen Mode -->
+    <div id="radarCard" class="ya-box rounded-3xl p-3.5 sm:p-5 space-y-3 -mx-1 sm:-mx-3 lg:-mx-6 transition-all">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <div class="space-y-0.5">
           <div class="flex items-center gap-2">
@@ -283,19 +311,34 @@
           </div>
         </div>
         
-        <!-- Layer Selectors -->
-        <div class="flex items-center gap-1 bg-black/20 p-1 rounded-xl text-xs">
-          <button id="btnLayerRain" onclick="setRadarLayer('rain')" class="px-2.5 py-1 rounded-lg bg-yaBlue text-white font-bold transition">
-            <i class="fa-solid fa-cloud-showers-heavy text-[11px] mr-1"></i>Осадки
+        <!-- Controls: Layers, Height Toggle, Fullscreen Toggle -->
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <!-- Layer Selectors -->
+          <div class="flex items-center gap-1 bg-black/20 p-1 rounded-xl text-xs">
+            <button id="btnLayerRain" onclick="setRadarLayer('rain')" class="px-2.5 py-1 rounded-lg bg-yaBlue text-white font-bold transition">
+              <i class="fa-solid fa-cloud-showers-heavy text-[11px] mr-1"></i>Осадки
+            </button>
+            <button id="btnLayerRadar" onclick="setRadarLayer('radar')" class="px-2.5 py-1 rounded-lg text-yaTextMuted hover:text-white transition">
+              <i class="fa-solid fa-satellite-dish text-[11px] mr-1"></i>Радар
+            </button>
+            <button id="btnLayerClouds" onclick="setRadarLayer('clouds')" class="px-2.5 py-1 rounded-lg text-yaTextMuted hover:text-white transition">
+              <i class="fa-solid fa-cloud text-[11px] mr-1"></i>Облака
+            </button>
+            <button id="btnLayerWind" onclick="setRadarLayer('wind')" class="px-2.5 py-1 rounded-lg text-yaTextMuted hover:text-white transition">
+              <i class="fa-solid fa-wind text-[11px] mr-1"></i>Ветер
+            </button>
+          </div>
+
+          <!-- Height Toggle Button -->
+          <button onclick="toggleRadarHeight()" title="Изменить высоту карты" class="h-8 px-2.5 rounded-xl ya-sub-box hover:bg-white/10 text-xs font-semibold text-gray-300 flex items-center gap-1.5 transition active:scale-95 border border-white/5">
+            <i class="fa-solid fa-arrows-up-down text-[10px]"></i>
+            <span class="hidden md:inline">Высота</span>
           </button>
-          <button id="btnLayerRadar" onclick="setRadarLayer('radar')" class="px-2.5 py-1 rounded-lg text-yaTextMuted hover:text-white transition">
-            <i class="fa-solid fa-satellite-dish text-[11px] mr-1"></i>Радар
-          </button>
-          <button id="btnLayerClouds" onclick="setRadarLayer('clouds')" class="px-2.5 py-1 rounded-lg text-yaTextMuted hover:text-white transition">
-            <i class="fa-solid fa-cloud text-[11px] mr-1"></i>Облака
-          </button>
-          <button id="btnLayerWind" onclick="setRadarLayer('wind')" class="px-2.5 py-1 rounded-lg text-yaTextMuted hover:text-white transition">
-            <i class="fa-solid fa-wind text-[11px] mr-1"></i>Ветер
+
+          <!-- Fullscreen Toggle Button -->
+          <button onclick="toggleRadarFullscreen()" title="На весь экран" class="h-8 px-2.5 rounded-xl ya-sub-box hover:bg-white/10 text-xs font-semibold text-white flex items-center gap-1.5 transition active:scale-95 border border-white/5">
+            <i id="radarExpandIcon" class="fa-solid fa-expand text-xs text-yaBlue"></i>
+            <span id="radarExpandText" class="hidden sm:inline">Во весь экран</span>
           </button>
         </div>
       </div>
@@ -325,8 +368,8 @@
         </div>
       </div>
 
-      <!-- Ventusky Iframe Container -->
-      <div class="relative w-full h-[380px] sm:h-[430px] rounded-2xl overflow-hidden border border-white/10 bg-[#12141A]">
+      <!-- Ventusky Iframe Container with Spacious Dimensions -->
+      <div id="radarContainer" class="relative w-full h-[480px] sm:h-[540px] md:h-[580px] rounded-2xl overflow-hidden border border-white/10 bg-[#12141A] transition-all duration-300">
         <iframe 
           id="radarIframe" 
           class="w-full h-full border-0"
@@ -457,15 +500,15 @@
           </div>
         </div>
 
-        <!-- 5. Météo-France -->
+        <!-- 5. UK Met Office (UKMO) -->
         <div class="ya-sub-box p-3 rounded-2xl border border-white/5 flex items-start gap-3 sm:col-span-2 lg:col-span-1">
           <div class="w-6 h-6 rounded-lg bg-indigo-500/15 text-indigo-400 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
-            FR
+            UK
           </div>
           <div class="min-w-0">
-            <div class="text-xs font-bold text-white">Météo-France</div>
+            <div class="text-xs font-bold text-white">UK Met Office</div>
             <div class="text-[10px] text-yaTextMuted mt-0.5 leading-snug">
-              Национальная служба погоды Франции (ARPEGE). Передовые алгоритмы расчёта облачности и конвективных грозовых осадков.
+              Национальная служба погоды Великобритании. Модель Unified Model — мировой авторитет в расчёте циклонов, струйных течений и влажности.
             </div>
           </div>
         </div>
@@ -511,49 +554,49 @@
           { name: "GFS", region: "США", dayTemp: 15, nightTemp: 8, precipSum: 0.0 },
           { name: "ICON", region: "Германия", dayTemp: 14, nightTemp: 6, precipSum: 0.0 },
           { name: "GEM", region: "Канада", dayTemp: 13, nightTemp: 7, precipSum: 0.0 },
-          { name: "Météo-France", region: "Франция", dayTemp: 14, nightTemp: 7, precipSum: 0.0 }
+          { name: "UK Met Office", region: "Великобритания", dayTemp: 14, nightTemp: 7, precipSum: 0.0 }
         ]},
         { date: "2026-09-09", code: 3,  maxTemp: 17, minTemp: 9,  precipProb: 20, precipSum: 0.1, models: [
           { name: "ECMWF", region: "Европа", dayTemp: 17, nightTemp: 9, precipSum: 0.0 },
           { name: "GFS", region: "США", dayTemp: 18, nightTemp: 10, precipSum: 0.2 },
           { name: "ICON", region: "Германия", dayTemp: 17, nightTemp: 8, precipSum: 0.0 },
           { name: "GEM", region: "Канада", dayTemp: 16, nightTemp: 9, precipSum: 0.1 },
-          { name: "Météo-France", region: "Франция", dayTemp: 17, nightTemp: 9, precipSum: 0.1 }
+          { name: "UK Met Office", region: "Великобритания", dayTemp: 17, nightTemp: 9, precipSum: 0.1 }
         ]},
         { date: "2026-09-10", code: 2,  maxTemp: 21, minTemp: 12, precipProb: 10, precipSum: 0.0, models: [
           { name: "ECMWF", region: "Европа", dayTemp: 21, nightTemp: 12, precipSum: 0.0 },
           { name: "GFS", region: "США", dayTemp: 22, nightTemp: 13, precipSum: 0.0 },
           { name: "ICON", region: "Германия", dayTemp: 20, nightTemp: 11, precipSum: 0.0 },
           { name: "GEM", region: "Канада", dayTemp: 21, nightTemp: 12, precipSum: 0.0 },
-          { name: "Météo-France", region: "Франция", dayTemp: 22, nightTemp: 12, precipSum: 0.0 }
+          { name: "UK Met Office", region: "Великобритания", dayTemp: 22, nightTemp: 12, precipSum: 0.0 }
         ]},
         { date: "2026-09-11", code: 80, maxTemp: 16, minTemp: 10, precipProb: 65, precipSum: 4.5, models: [
           { name: "ECMWF", region: "Европа", dayTemp: 16, nightTemp: 10, precipSum: 5.2 },
           { name: "GFS", region: "США", dayTemp: 17, nightTemp: 11, precipSum: 3.8 },
           { name: "ICON", region: "Германия", dayTemp: 15, nightTemp: 9, precipSum: 4.9 },
           { name: "GEM", region: "Канада", dayTemp: 16, nightTemp: 10, precipSum: 4.1 },
-          { name: "Météo-France", region: "Франция", dayTemp: 16, nightTemp: 10, precipSum: 4.5 }
+          { name: "UK Met Office", region: "Великобритания", dayTemp: 16, nightTemp: 10, precipSum: 4.5 }
         ]},
         { date: "2026-09-12", code: 80, maxTemp: 13, minTemp: 8,  precipProb: 75, precipSum: 6.2, models: [
           { name: "ECMWF", region: "Европа", dayTemp: 13, nightTemp: 8, precipSum: 7.1 },
           { name: "GFS", region: "США", dayTemp: 14, nightTemp: 9, precipSum: 5.4 },
           { name: "ICON", region: "Германия", dayTemp: 13, nightTemp: 7, precipSum: 6.8 },
           { name: "GEM", region: "Канада", dayTemp: 12, nightTemp: 8, precipSum: 6.0 },
-          { name: "Météo-France", region: "Франция", dayTemp: 13, nightTemp: 8, precipSum: 6.3 }
+          { name: "UK Met Office", region: "Великобритания", dayTemp: 13, nightTemp: 8, precipSum: 6.3 }
         ]},
         { date: "2026-09-13", code: 2,  maxTemp: 15, minTemp: 9,  precipProb: 20, precipSum: 0.2, models: [
           { name: "ECMWF", region: "Европа", dayTemp: 15, nightTemp: 9, precipSum: 0.0 },
           { name: "GFS", region: "США", dayTemp: 16, nightTemp: 10, precipSum: 0.4 },
           { name: "ICON", region: "Германия", dayTemp: 15, nightTemp: 8, precipSum: 0.1 },
           { name: "GEM", region: "Канада", dayTemp: 14, nightTemp: 9, precipSum: 0.2 },
-          { name: "Météo-France", region: "Франция", dayTemp: 15, nightTemp: 9, precipSum: 0.1 }
+          { name: "UK Met Office", region: "Великобритания", dayTemp: 15, nightTemp: 9, precipSum: 0.1 }
         ]},
         { date: "2026-09-14", code: 2,  maxTemp: 16, minTemp: 10, precipProb: 10, precipSum: 0.0, models: [
           { name: "ECMWF", region: "Европа", dayTemp: 16, nightTemp: 10, precipSum: 0.0 },
           { name: "GFS", region: "США", dayTemp: 17, nightTemp: 11, precipSum: 0.0 },
           { name: "ICON", region: "Германия", dayTemp: 16, nightTemp: 9, precipSum: 0.0 },
           { name: "GEM", region: "Канада", dayTemp: 15, nightTemp: 10, precipSum: 0.0 },
-          { name: "Météo-France", region: "Франция", dayTemp: 16, nightTemp: 10, precipSum: 0.0 }
+          { name: "UK Met Office", region: "Великобритания", dayTemp: 16, nightTemp: 10, precipSum: 0.0 }
         ]}
       ],
       hourly: [
@@ -749,8 +792,8 @@
         timezone: 'auto'
       });
 
-      // Individual queries for 5 meteorological models
-      const modelList = ['ecmwf_ifs025', 'gfs_seamless', 'icon_seamless', 'gem_seamless', 'meteofrance_seamless'];
+      // Individual queries for 5 meteorological models: ECMWF, GFS, ICON, GEM, UKMO
+      const modelList = ['ecmwf_ifs025', 'gfs_seamless', 'icon_seamless', 'gem_seamless', 'ukmo_seamless'];
       const modelParams = new URLSearchParams({
         latitude: lat,
         longitude: lon,
@@ -815,7 +858,7 @@
         { name: "GFS", region: "США" },
         { name: "ICON", region: "Германия" },
         { name: "GEM", region: "Канада" },
-        { name: "Météo-France", region: "Франция" }
+        { name: "UK Met Office", region: "Великобритания" }
       ];
 
       for (let i = 0; i < daysCount; i++) {
@@ -1309,6 +1352,40 @@
       });
 
       updateRadarIframe(currentCoords.lat, currentCoords.lon);
+    }
+
+    /* Toggle Map Height between Standard and Expanded */
+    function toggleRadarHeight() {
+      const container = document.getElementById("radarContainer");
+      const isExpanded = container.classList.contains("h-[640px]");
+      if (isExpanded) {
+        container.classList.remove("h-[640px]", "sm:h-[720px]");
+        container.classList.add("h-[480px]", "sm:h-[540px]", "md:h-[580px]");
+        showToast("Стандартный размер карты");
+      } else {
+        container.classList.remove("h-[480px]", "sm:h-[540px]", "md:h-[580px]");
+        container.classList.add("h-[640px]", "sm:h-[720px]");
+        showToast("Увеличенный размер карты");
+      }
+    }
+
+    /* Toggle Fullscreen Map Mode */
+    function toggleRadarFullscreen() {
+      const card = document.getElementById("radarCard");
+      const icon = document.getElementById("radarExpandIcon");
+      const text = document.getElementById("radarExpandText");
+      const isFull = card.classList.toggle("radar-fullscreen");
+
+      if (isFull) {
+        icon.className = "fa-solid fa-compress text-xs text-yaBlue";
+        if (text) text.innerText = "Свернуть";
+        document.body.style.overflow = "hidden";
+        showToast("Полноэкранный режим карты");
+      } else {
+        icon.className = "fa-solid fa-expand text-xs text-yaBlue";
+        if (text) text.innerText = "Во весь экран";
+        document.body.style.overflow = "";
+      }
     }
 
     function update5ModelsDisplay(results) {
