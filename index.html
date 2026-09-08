@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ru" class="dark">
 <head>
@@ -236,6 +237,550 @@
         <div class="flex items-center gap-2">
           <span>Ощущается как <b id="apparentTemp" class="text-white">+10°</b></span>
           <span>·</span>
+          <span>Осадки сейчас: <b id="currentPrecipProb" class="text-sky-400">0%</b></span>
+        </div>
+        <div class="flex items-center gap-4 font-semibold text-gray-300">
+          <span title="Ветер"><i class="fa-solid fa-wind text-yaTextMuted mr-1"></i><span id="windVal">3 м/с, СЗ</span></span>
+          <span title="Давление"><i class="fa-solid fa-gauge-high text-yaTextMuted mr-1"></i><span id="pressureVal">752 мм</span></span>
+          <span title="Влажность"><i class="fa-solid fa-droplet text-yaTextMuted mr-1"></i><span id="humidityVal">78%</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ya-box rounded-3xl p-4 sm:p-5 space-y-2">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-sm font-bold text-white">Прогноз на ближайшие часы</h2>
+          <p class="text-[11px] text-yaTextMuted">Консенсус 5 моделей с шагом в 1 час</p>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <!-- Desktop Scroll Buttons -->
+          <button onclick="scrollHourly(-220)" title="Назад" class="w-7 h-7 rounded-xl ya-sub-box hover:bg-white/10 flex items-center justify-center text-xs text-gray-300 transition active:scale-90">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <button onclick="scrollHourly(220)" title="Вперед" class="w-7 h-7 rounded-xl ya-sub-box hover:bg-white/10 flex items-center justify-center text-xs text-gray-300 transition active:scale-90">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- 24-Hour Scrollable Container -->
+      <div id="hourlyContainer" class="flex items-stretch gap-2 overflow-x-auto no-scrollbar py-2 text-center select-none cursor-grab">
+        <!-- Generated via JavaScript -->
+      </div>
+    </div>
+
+    <div class="ya-box rounded-3xl p-4 sm:p-5 space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="space-y-0.5">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-layer-group text-yaBlue text-sm"></i>
+            <h2 class="text-sm font-bold text-white">Карта осадков и облаков онлайн</h2>
+          </div>
+          <div id="radarTimeStatus" class="text-[11px] font-semibold text-yaBlue flex items-center gap-1.5">
+            <i class="fa-regular fa-clock text-[10px]"></i>
+            <span id="radarTimeText">Прогноз: Сейчас (онлайн)</span>
+          </div>
+        </div>
+        
+        <!-- Layer Selectors -->
+        <div class="flex items-center gap-1 bg-black/20 p-1 rounded-xl text-xs">
+          <button id="btnLayerRain" onclick="setRadarLayer('rain')" class="px-2.5 py-1 rounded-lg bg-yaBlue text-white font-bold transition">
+            <i class="fa-solid fa-cloud-showers-heavy text-[11px] mr-1"></i>Осадки
+          </button>
+          <button id="btnLayerRadar" onclick="setRadarLayer('radar')" class="px-2.5 py-1 rounded-lg text-yaTextMuted hover:text-white transition">
+            <i class="fa-solid fa-satellite-dish text-[11px] mr-1"></i>Радар
+          </button>
+          <button id="btnLayerClouds" onclick="setRadarLayer('clouds')" class="px-2.5 py-1 rounded-lg text-yaTextMuted hover:text-white transition">
+            <i class="fa-solid fa-cloud text-[11px] mr-1"></i>Облака
+          </button>
+          <button id="btnLayerWind" onclick="setRadarLayer('wind')" class="px-2.5 py-1 rounded-lg text-yaTextMuted hover:text-white transition">
+            <i class="fa-solid fa-wind text-[11px] mr-1"></i>Ветер
+          </button>
+        </div>
+      </div>
+
+      <!-- Hourly Timeline Bar for Ventusky Forecast Navigation -->
+      <div class="flex items-center justify-between gap-2 pt-1 border-t border-white/5">
+        <div class="flex items-center gap-1 text-[11px] font-bold text-yaTextMuted shrink-0">
+          <span>ЧАС:</span>
+          <button onclick="stepRadarHour(-1)" title="На 1 час назад" class="w-6 h-6 rounded-lg ya-sub-box hover:bg-white/10 flex items-center justify-center text-gray-300 transition active:scale-90">
+            <i class="fa-solid fa-chevron-left text-[9px]"></i>
+          </button>
+          <button onclick="stepRadarHour(1)" title="На 1 час вперед" class="w-6 h-6 rounded-lg ya-sub-box hover:bg-white/10 flex items-center justify-center text-gray-300 transition active:scale-90">
+            <i class="fa-solid fa-chevron-right text-[9px]"></i>
+          </button>
+        </div>
+
+        <!-- Quick Jump Buttons -->
+        <div id="radarTimelineBar" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 text-xs">
+          <button onclick="setRadarHourOffset(0)" id="btnHour0" class="shrink-0 px-2.5 py-1 rounded-xl bg-yaBlue text-white font-bold transition active:scale-95">Сейчас</button>
+          <button onclick="setRadarHourOffset(1)" id="btnHour1" class="shrink-0 px-2.5 py-1 rounded-xl ya-sub-box text-yaTextMuted hover:text-white font-semibold transition active:scale-95">+1 ч</button>
+          <button onclick="setRadarHourOffset(2)" id="btnHour2" class="shrink-0 px-2.5 py-1 rounded-xl ya-sub-box text-yaTextMuted hover:text-white font-semibold transition active:scale-95">+2 ч</button>
+          <button onclick="setRadarHourOffset(3)" id="btnHour3" class="shrink-0 px-2.5 py-1 rounded-xl ya-sub-box text-yaTextMuted hover:text-white font-semibold transition active:scale-95">+3 ч</button>
+          <button onclick="setRadarHourOffset(4)" id="btnHour4" class="shrink-0 px-2.5 py-1 rounded-xl ya-sub-box text-yaTextMuted hover:text-white font-semibold transition active:scale-95">+4 ч</button>
+          <button onclick="setRadarHourOffset(6)" id="btnHour6" class="shrink-0 px-2.5 py-1 rounded-xl ya-sub-box text-yaTextMuted hover:text-white font-semibold transition active:scale-95">+6 ч</button>
+          <button onclick="setRadarHourOffset(12)" id="btnHour12" class="shrink-0 px-2.5 py-1 rounded-xl ya-sub-box text-yaTextMuted hover:text-white font-semibold transition active:scale-95">+12 ч</button>
+          <button onclick="setRadarHourOffset(24)" id="btnHour24" class="shrink-0 px-2.5 py-1 rounded-xl ya-sub-box text-yaTextMuted hover:text-white font-semibold transition active:scale-95">Завтра (+24ч)</button>
+        </div>
+      </div>
+
+      <!-- Ventusky Iframe Container -->
+      <div class="relative w-full h-[380px] sm:h-[430px] rounded-2xl overflow-hidden border border-white/10 bg-[#12141A]">
+        <iframe 
+          id="radarIframe" 
+          class="w-full h-full border-0"
+          src=""
+          loading="lazy"
+          allowfullscreen>
+        </iframe>
+      </div>
+      
+      <div class="flex items-center justify-between text-[11px] text-yaTextMuted px-1">
+        <span><i class="fa-solid fa-hand-pointer text-[9px] mr-1 text-yaBlue"></i>Кликайте по кнопкам часов выше или карточкам верхнего ряда для переключения прогноза</span>
+        <span class="hidden sm:inline">Движок: Ventusky Weather</span>
+      </div>
+    </div>
+
+    <div class="ya-box rounded-3xl p-5 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="text-base font-bold text-white">Прогноз на 7 дней</h2>
+          <p class="text-xs text-yaTextMuted mt-0.5">Усреднение 5 моделей · <span class="text-yaBlue font-semibold">нажмите на день для сравнения моделей</span></p>
+        </div>
+        <div class="flex items-center gap-3 text-xs">
+          <span class="flex items-center gap-1 font-bold text-yaBlue">
+            <span class="w-2.5 h-2.5 rounded-full bg-yaBlue"></span> День
+          </span>
+          <span class="flex items-center gap-1 font-bold text-gray-400">
+            <span class="w-2.5 h-2.5 rounded-full bg-gray-400"></span> Ночь
+          </span>
+          <span class="flex items-center gap-1 font-bold text-sky-400">
+            <span class="w-2.5 h-2.5 rounded bg-sky-400/70"></span> Осадки (мм)
+          </span>
+        </div>
+      </div>
+
+      <!-- Chart Canvas -->
+      <div class="relative h-44 w-full">
+        <canvas id="weekCompositeChart"></canvas>
+      </div>
+
+      <!-- Detailed Day List -->
+      <div id="weeklyListContainer" class="divide-y divide-white/5 pt-1">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+
+    <!-- About 5 Models & Consensus Methodology -->
+    <div class="ya-box rounded-3xl p-5 sm:p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-white/5 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-xl bg-yaBlue/15 text-yaBlue flex items-center justify-center text-xs">
+            <i class="fa-solid fa-circle-nodes"></i>
+          </div>
+          <div>
+```html
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Погода — Консенсус 5 моделей</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <!-- Google Fonts: Manrope & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            yaDarkBg: '#101216',
+            yaCard: '#181B22',
+            yaCardHover: '#20242E',
+            yaPill: '#222631',
+            yaTextMuted: '#858B9C',
+            yaWeekend: '#F05838',
+            yaBlue: '#4485FD',
+            yaRain: '#38BDF8'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+
+    .font-heading {
+      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+      letter-spacing: -0.04em;
+    }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Dark Theme */
+    html.dark body {
+      background-color: #101216;
+      color: #F0F2F7;
+    }
+    html.dark .ya-box {
+      background-color: #181B22;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    html.dark .ya-sub-box {
+      background-color: #12141A;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    html.dark .ya-hover:hover {
+      background-color: rgba(255, 255, 255, 0.06);
+    }
+
+    /* Light Theme */
+    html.light body {
+      background-color: #F3F4F8;
+      color: #1F2430;
+    }
+    html.light .ya-box {
+      background-color: #FFFFFF;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+    }
+    html.light .ya-sub-box {
+      background-color: #F8F9FD;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    html.light .ya-hover:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+    html.light .text-white {
+      color: #181B22 !important;
+    }
+    html.light .text-gray-300 {
+      color: #4B5563 !important;
+    }
+    html.light .text-gray-400 {
+      color: #6B7280 !important;
+    }
+
+    .map-header-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 380px;
+      background-image: 
+        radial-gradient(circle at 50% 35%, rgba(16, 18, 22, 0.4) 0%, rgba(16, 18, 22, 0.95) 80%, #101216 100%),
+        url('https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1600&auto=format&fit=crop');
+      background-size: cover;
+      background-position: center 30%;
+      opacity: 0.3;
+      filter: saturate(0.2) contrast(1.2);
+      pointer-events: none;
+      z-index: 0;
+    }
+    html.light .map-header-bg {
+      opacity: 0.1;
+      filter: grayscale(1);
+    }
+  </style>
+</head>
+
+<body class="min-h-screen relative flex justify-center pb-24">
+  <!-- Background Header Map Effect -->
+  <div class="map-header-bg"></div>
+
+  <div class="w-full max-w-4xl px-3 sm:px-6 z-10 space-y-3 pt-3">
+
+    <!-- Top Action Bar -->
+    <header class="flex items-center justify-between gap-2 relative">
+      <!-- GPS Location Button -->
+      <button onclick="getGPSLocation()" title="Мое местоположение" class="h-10 px-3.5 rounded-full bg-white/10 hover:bg-white/15 backdrop-blur-md text-xs font-semibold flex items-center gap-2 border border-white/10 transition active:scale-95 shrink-0">
+        <i class="fa-solid fa-location-arrow text-xs text-yaBlue"></i>
+        <span class="hidden sm:inline">Найти меня</span>
+      </button>
+
+      <!-- City Search Field -->
+      <div class="relative flex-1 max-w-md">
+        <div class="relative flex items-center">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-yaTextMuted text-xs"></i>
+          <input 
+            id="citySearch" 
+            type="text" 
+            placeholder="Поиск города..." 
+            value="Ярославль"
+            autocomplete="off"
+            class="w-full pl-9 pr-8 py-2 rounded-full ya-sub-box text-sm font-semibold placeholder-yaTextMuted border focus:outline-none focus:border-yaBlue backdrop-blur-md transition text-center"
+          />
+          <button id="clearSearchBtn" class="hidden absolute right-3 text-yaTextMuted hover:text-white transition">
+            <i class="fa-solid fa-circle-xmark text-xs"></i>
+          </button>
+        </div>
+        <div id="searchResults" class="absolute left-0 right-0 top-12 ya-box rounded-2xl shadow-2xl z-50 overflow-hidden hidden max-h-64 overflow-y-auto"></div>
+      </div>
+
+      <!-- Add to Favorites Button -->
+      <button id="favoriteBtn" onclick="toggleFavorite()" class="h-10 px-3.5 rounded-full bg-white/10 hover:bg-white/15 backdrop-blur-md text-xs font-semibold flex items-center gap-1.5 border border-white/10 transition active:scale-95 shrink-0">
+        <i id="favIcon" class="fa-regular fa-star text-xs"></i>
+        <span id="favText" class="hidden sm:inline">В избранное</span>
+      </button>
+
+      <!-- Theme Switcher Button -->
+      <button onclick="toggleTheme()" id="themeToggleBtn" title="Сменить тему" class="h-10 w-10 rounded-full bg-white/10 hover:bg-white/15 backdrop-blur-md flex items-center justify-center border border-white/10 transition active:scale-95 shrink-0">
+        <i id="themeIcon" class="fa-solid fa-sun text-amber-400 text-sm"></i>
+      </button>
+    </header>
+
+    <!-- Favorites Bar -->
+    <div id="favoritesBar" class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 text-xs">
+      <!-- Injected via JavaScript -->
+    </div>
+
+    <!-- Status Toast Notification -->
+    <div id="statusToast" class="hidden text-xs text-center py-1.5 px-4 rounded-full bg-white/20 text-white font-medium backdrop-blur-md border border-white/10 w-fit mx-auto transition-all"></div>
+
+    <div class="ya-box rounded-3xl p-5 sm:p-6 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5">
+          <h1 id="cityName" class="text-xl sm:text-2xl font-bold tracking-tight">Ярославль</h1>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-400">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            Консенсус 5 моделей
+          </span>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <div id="localTimeBadge" class="text-[11px] font-semibold text-yaTextMuted ya-sub-box px-2.5 py-1 rounded-xl">
+            <i class="fa-regular fa-clock text-[10px] mr-1"></i><span id="localTimeVal">--:--</span>
+          </div>
+          <div id="consensusSpreadBadge" class="text-[11px] font-semibold text-yaTextMuted ya-sub-box px-2.5 py-1 rounded-xl">
+            Разброс: ±0.8°C
+          </div>
+        </div>
+      </div>
+
+      <!-- Temperature, Weather Icon, and Smart Precipitation Text -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+        <div class="flex items-center gap-4 sm:gap-6">
+          <div id="currentTemp" class="font-heading text-6xl sm:text-7xl font-extrabold tracking-tight leading-none text-white">
+            +12°
+          </div>
+          <div class="flex items-center gap-3">
+            <div id="heroIcon" class="text-5xl sm:text-6xl text-amber-400 drop-shadow-md">
+              <i class="fa-solid fa-cloud-sun"></i>
+            </div>
+            <div>
+              <div id="weatherDesc" class="text-lg sm:text-xl font-bold leading-tight text-white">Облачно с прояснениями</div>
+              <!-- Intelligent Precipitation Timing Status -->
+              <div id="nowcastSubtitle" class="text-sm font-semibold text-sky-400 mt-1 flex items-center gap-1.5">
+                <i class="fa-solid fa-droplet text-xs"></i>
+                <span id="nowcastText">Осадков не ожидается</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Daily Extrema Box: Day / Night / Precipitation Sum -->
+        <div class="grid grid-cols-3 gap-2 ya-sub-box p-3 rounded-2xl text-center min-w-[240px]">
+          <div>
+            <div class="text-[10px] uppercase font-bold text-yaBlue">День</div>
+            <div id="heroDayTemp" class="text-base font-extrabold text-white mt-0.5">+14°</div>
+          </div>
+          <div class="border-x border-white/5">
+            <div class="text-[10px] uppercase font-bold text-gray-400">Ночь</div>
+            <div id="heroNightTemp" class="text-base font-extrabold text-white mt-0.5">+7°</div>
+          </div>
+          <div>
+            <div class="text-[10px] uppercase font-bold text-sky-400">Осадки</div>
+            <div id="heroPrecipSum" class="text-base font-extrabold text-white mt-0.5">0.0 мм</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Status Metrics: Apparent, Rain Prob, Wind, Pressure, Humidity -->
+      <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/5 text-xs text-yaTextMuted">
+        <div class="flex items-center gap-2">
+          <span>Ощущается как <b id="apparentTemp" class="text-white">+10°</b></span>
+          <span>·</span>
+          <span>Осадки сейчас: <b id="currentPrecipProb" class="text-sky-400">0%</b></span>
+        </div>
+        <div class="flex items-center gap-4 font-semibold text-gray-300">
+          <span title="Ветер"><i class="fa-solid fa-wind text-yaTextMuted mr-1"></i><span id="windVal">3 м/с, СЗ</span></span>
+          <span title="Давление"><i class="fa-solid fa-gauge-high text-yaTextMuted mr-1"></i><span id="pressureVal">752 мм</span></span>
+          <span title="Влажность"><i class="fa-solid fa-droplet text-yaTextMuted mr-1"></i><span id="humidityVal">78%</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ya-box rounded-3xl p-4 sm:p-5 space-y-2">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-sm font-bold text-white">Прогноз на ближайшие часы</h2>
+          <p class="text-[11px] text-yaTextMuted">Консенсус 5 моделей с шагом в 1 час</p>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <!-- Desktop Scroll Buttons -->
+          <button onclick="scrollHourly(-220)" title="Назад" class="w-7 h-7 rounded-xl ya-sub-box hover:bg-white/10 flex items-center justify-center text-xs text-gray-300 transition active:scale-90">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <button onclick="scrollHourly(220)" title="Вперед" class="w-7 h-7 rounded-xl ya-sub-box hover:bg-white/10 flex items-center justify-center text-xs text-gray-300 transition active:scale-90">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- 24-Hour Scrollable Container -->
+      <div id="hourlyContainer" class="flex items-stretch gap-2 overflow-x-auto no-scrollbar py-2 text-center select-none cursor-grab">
+        <!-- Generated via JavaScript -->
+      </div>
+    </div>
+
+    <div class="ya-box rounded-3xl p-4 sm:p-5 space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="space-y-0.5">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-layer-group text-yaBlue text-sm"></i>
+            <h2 class="text-sm font-bold text-white">Карта осадков и облаков онлайн</h2>
+          </div>
+          <div id="radarTimeStatus" class="text-[11px] font-semibold text-yaBlue flex items-center gap-1.5">
+            <i class="fa-regular fa-clock text-[10px]"></i>
+            <span id="radarTimeText">Прогноз: Сейчас (онлайн)</span>
+          </div>
+        </div>
+        
+        <!-- Layer Selectors -->
+        <div class="flex items-center gap-1 bg-black/20 p-1 rounded-xl text-xs">
+          <button id="btnLayerRain" onclick="setRadarLayer('rain')" class="px-2.5 py-1 rounded-lg bg-yaBlue text-white font-bold transition">
+            <i class="fa-solid fa-cloud-showers-heavy text-[11px] mr-1"></i>Осадки
+          </button>
+          <button id="btnLayerRadar" onclick="setRadarLayer('radar')" class="px-2.5 py-1 rounded-lg text-yaTextMuted hover:text-white transition">
+            <i class="fa-solid fa-satellite-dish text-[11px] mr-1"></i>Радар
+          </button>
+          <button id="btnLayerClouds" onclick="setRadarLayer('clouds')" class="px-2.5 py-1 rounded-lg text-yaTextMuted hover:text-white transition">
+            <i class="fa-solid fa-cloud text-[11px] mr-1"></i>Облака
+          </button>
+          <button id="btnLayerWind" onclick="setRadarLayer('wind')" class="px-2.5 py-1 rounded-lg text-yaTextMuted hover:text-white transition">
+            <i class="fa-solid fa-wind text-[11px] mr-1"></i>Ветер
+          </button>
+        </div>
+      </div>
+
+      <!-- Hourly Timeline Bar for Ventusky Forecast Navigation -->
+      <div class="flex items-center justify-between gap-2 pt-1 border-t border-white/5">
+        <div class="flex items-center gap-1 text-[11px] font-bold text-yaTextMuted shrink-0">
+          <span>ЧАС:</span>
+          <button onclick="stepRadarHour(-1)" title="На 1 час назад" class="w-6 h-6 rounded-lg ya-sub-box hover:bg-white/10 flex items-center justify-center text-gray-300 transition active:scale-90">
+            <i class="fa-solid fa-chevron-left text-[9px]"></i>
+          </button>
+          <button onclick="stepRadarHour(1)" title="На 1 час вперед" class="w-6 h-6 rounded-lg ya-sub-box hover:bg-white/10 flex items-center justify-center text-gray-300 transition active:scale-90">
+            <i class="fa-solid fa-chevron-right text-[9px]"></i>
+          </button>
+        </div>
+
+        <!-- Quick Jump Buttons -->
+        <div id="radarTimelineBar" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 text-xs">
+          <button onclick="setRadarHourOffset(0)" id="btnHour0" class="shrink-0 px-2.5 py-1 rounded-xl bg-yaBlue text-white font-bold transition active:scale-95">Сейчас</button>
+          <button onclick="setRadarHourOffset(1)" id="btnHour1" class="shrink-0 px-2.5 py-1 rounded-xl ya-sub-box text-yaTextMuted hover:text-white font-semibold transition active:scale-95">+1 ч</button>
+          <button onclick="setRadarHourOffset(2)" id="btnHour2" class="shrink-0 px-2.5 py-1 rounded-xl ya-sub-box text-yaTextMuted hover:text-white font-semibold transition active:scale-95">+2 ч</button>
+          <button onclick="setRadarHourOffset(3)" id="btnHour3" class="shrink-0 px-2.5 py-1 rounded-xl ya-sub-box text-yaTextMuted hover:text-white font-semibold transition active:scale-95">+3 ч</button>
+          <button onclick="setRadarHourOffset(4)" id="btnHour4" class="shrink-0 px-2.5 py-1 rounded-xl ya-sub-box text-yaTextMuted hover:text-white font-semibold transition active:scale-95">+4 ч</button>
+          <button onclick="setRadarHourOffset(6)" id="btnHour6" class="shrink-0 px-2.5 py-1 rounded-xl ya-sub-box text-yaTextMuted hover:text-white font-semibold transition active:scale-95">+6 ч</button>
+          <button onclick="setRadarHourOffset(12)" id="btnHour12" class="shrink-0 px-2.5 py-1 rounded-xl ya-sub-box text-yaTextMuted hover:text-white font-semibold transition active:scale-95">+12 ч</button>
+          <button onclick="setRadarHourOffset(24)" id="btnHour24" class="shrink-0 px-2.5 py-1 rounded-xl ya-sub-box text-yaTextMuted hover:text-white font-semibold transition active:scale-95">Завтра (+24ч)</button>
+        </div>
+      </div>
+
+      <!-- Ventusky Iframe Container -->
+      <div class="relative w-full h-[380px] sm:h-[430px] rounded-2xl overflow-hidden border border-white/10 bg-[#12141A]">
+        <iframe 
+          id="radarIframe" 
+          class="w-full h-full border-0"
+          src=""
+          loading="lazy"
+          allowfullscreen>
+        </iframe>
+      </div>
+      
+      <div class="flex items-center justify-between text-[11px] text-yaTextMuted px-1">
+        <span><i class="fa-solid fa-hand-pointer text-[9px] mr-1 text-yaBlue"></i>Кликайте по кнопкам часов выше или карточкам верхнего ряда для переключения прогноза</span>
+        <span class="hidden sm:inline">Движок: Ventusky Weather</span>
+      </div>
+    </div>
+
+    <div class="ya-box rounded-3xl p-5 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="text-base font-bold text-white">Прогноз на 7 дней</h2>
+          <p class="text-xs text-yaTextMuted mt-0.5">Усреднение 5 моделей · <span class="text-yaBlue font-semibold">нажмите на день для сравнения моделей</span></p>
+        </div>
+        <div class="flex items-center gap-3 text-xs">
+          <span class="flex items-center gap-1 font-bold text-yaBlue">
+            <span class="w-2.5 h-2.5 rounded-full bg-yaBlue"></span> День
+          </span>
+          <span class="flex items-center gap-1 font-bold text-gray-400">
+            <span class="w-2.5 h-2.5 rounded-full bg-gray-400"></span> Ночь
+          </span>
+          <span class="flex items-center gap-1 font-bold text-sky-400">
+            <span class="w-2.5 h-2.5 rounded bg-sky-400/70"></span> Осадки (мм)
+          </span>
+        </div>
+      </div>
+
+      <!-- Chart Canvas -->
+      <div class="relative h-44 w-full">
+        <canvas id="weekCompositeChart"></canvas>
+      </div>
+
+      <!-- Detailed Day List -->
+      <div id="weeklyListContainer" class="divide-y divide-white/5 pt-1">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+
+    <!-- About 5 Models & Consensus Methodology -->
+    <div class="ya-box rounded-3xl p-5 sm:p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-white/5 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-xl bg-yaBlue/15 text-yaBlue flex items-center justify-center text-xs">
+            <i class="fa-solid fa-circle-nodes"></i>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-white">Как работает наш прогноз</h2>
+            <p class="text-[11px] text-yaTextMuted">Принцип мультимодельного консенсуса</p>
+          </div>
+        </div>
+        <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          5 независимых суперкомпьютеров
+        </span>
+      </div>
+
+      <!-- Explanatory Text -->
+      <div class="text-xs text-yaTextMuted leading-relaxed space-y-2">
+        <p>
+          Обычные погодные сайты полагаются на данные одного источника, поэтому любая ошибка в расчёте приводит к неверному прогнозу. Наш сервис одновременно опрашивает <strong class="text-white">5 ведущих мировых метеорологических институтов</strong>, сопоставляет их вычисления и находит между ними золотую середину.
+        </p>
+        <p>
+          <strong class="text-yaBlue">Механизм усреднения:</strong> мы анализируем почасовые и суточные сетки каждой модели, отсекаем статистические аномалии и рассчитываем взвешенный консенсус для температуры, времени начала и количества осадков. Индикатор <span class="text-white fonn>·</span>
           <span>Осадки сейчас: <b id="currentPrecipProb" class="text-sky-400">0%</b></span>
         </div>
         <div class="flex items-center gap-4 font-semibold text-gray-300">
